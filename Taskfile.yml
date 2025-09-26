@@ -1,0 +1,30 @@
+version: "3"
+tasks:
+  run-unit-tests:
+    desc: "Runs unit tests with pytest"
+    cmds:
+      - python -m pytest -p no:warnings --cov-report term-missing
+        --cov=fabric_sql tests
+
+  format-code:
+    desc: "Formats the code using ruff"
+    cmds:
+      - ruff format .
+
+  lint:
+    desc: "Runs linting with Ruff and type checking with Pyright"
+    cmds:
+      - uv run ruff check .
+      - pyright .
+
+  gen-requirements-txt:
+    desc: "Generates requirements.txt from the current environment"
+    cmds:
+      - uv lock
+      - uv export --frozen --no-dev --output-file=requirements.txt
+      - uv export --frozen --all-groups --output-file=requirements.dev.txt
+
+  pip-audit:
+    desc: "Runs pip-audit to check for vulnerabilities"
+    cmds:
+      - pip-audit -r requirements.txt

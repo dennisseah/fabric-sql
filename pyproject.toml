@@ -1,0 +1,47 @@
+[project]
+name = "fabric-sql"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "asyncpg>=0.29.0",
+    "azure-core>=1.35.1",
+    "azure-identity>=1.25.0",
+    "lagom>=2.7.7",
+    "pydantic>=2.11.9",
+    "python-dotenv>=1.1.1",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.3.0",
+    "pyright>=1.1.405",
+    "pytest>=8.4.2",
+    "pytest-asyncio>=1.2.0",
+    "pytest-cov>=7.0.0",
+    "pytest-mock>=3.15.1",
+    "ruff>=0.13.2",
+]
+
+[tool.ruff]
+exclude = ["typings"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "TID"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+exclude = ["typings", ".venv", ".vscode", ".git"]
+
+[tool.coverage.run]
+omit = [
+    "*/__init__.py",
+    "fabric_sql/hosting.py",
+    "fabric_sql/protocols/*"
+]
+
