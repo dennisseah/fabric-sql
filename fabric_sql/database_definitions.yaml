@@ -1,0 +1,54 @@
+---
+columns:
+  - name: account_id
+    description: This is the unique identifier for the cloud resource scope
+  - name: connection_name
+    description: This is logical container name for the cloud resources
+  - name: connection_status
+    description: >
+      This is the status of the cloud connection (e.g., ACTIVE, INACTIVE)
+  - name: framework_id
+    description: >
+      This is the identifier of framework. Framework is the security boundary
+      for the connections.
+  - name: framework_name
+    description: >
+      This is the name of framework. Framework is the security boundary for the
+      connections.
+  - name: framework_order
+    description: >
+      This is the sorting order of database results when grouped by framework.
+  - name: management_group_id
+    description: This is the unique identifier for the cloud management group
+  - name: policy_set_definition_id
+    description: >
+      This is the unique identifier for the compliance policy set definition
+  - name: scope_id
+    description: This is the level of the cloud resource scope
+  - name: scope_name
+    description: This is the name of the level of the cloud resource scope
+  - name: subscription_id
+    description: This is the unique identifier for the cloud subscription
+views:
+  - name: public.active_framework_connections
+    description: >
+      This view contains active framework connections of the cloud resources.
+      This provides framework and scope mapping
+  - name: public.daily_compliance_counts
+    description: >
+      This view contains daily compliance counts of the cloud resources. This
+      provides daily compliance counts (aggregated to framework level)
+  - name: public.daily_policy_compliance
+    description: >
+      This view contains daily policy compliance status of the cloud resources.
+      This provides daily policy compliance summary (aggregated to policy level)
+  - name: public.framework_policy_details
+    description: >
+      This view contains framework policy details of the cloud resources. This
+      provides framework details including policy counts
+  - name: public.connection_details
+    description: >
+      This table contains connection details of the cloud resources.
+  - name: public.policy_changes_for_this_week
+    description: >
+      This view contains policy changes for this week for all frameworks.

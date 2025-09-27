@@ -11,6 +11,9 @@ import os
 from dotenv import load_dotenv
 from lagom import Container, dependency_definition
 
+from fabric_sql.protocols.i_chat_client import IChatClient
+from fabric_sql.protocols.i_database_definitions import IDatabaseDefinitions
+from fabric_sql.protocols.i_duplicate_db_service import IDuplicateDBService
 from fabric_sql.protocols.i_source_database import ISourceDatabase
 from fabric_sql.protocols.i_target_database import ITargetDatabase
 
@@ -43,3 +46,24 @@ def target_db() -> ITargetDatabase:
     from fabric_sql.services.target_database import TargetDatabase
 
     return container[TargetDatabase]
+
+
+@dependency_definition(container, singleton=True)
+def duplicate_db_service() -> IDuplicateDBService:
+    from fabric_sql.services.duplicate_db_service import DuplicateDBService
+
+    return container[DuplicateDBService]
+
+
+@dependency_definition(container, singleton=True)
+def chat_client() -> IChatClient:
+    from fabric_sql.services.chat_client import ChatClient
+
+    return container[ChatClient]
+
+
+@dependency_definition(container, singleton=True)
+def database_definitions() -> IDatabaseDefinitions:
+    from fabric_sql.services.database_definitions import DatabaseDefinitions
+
+    return container[DatabaseDefinitions]

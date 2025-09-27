@@ -5,7 +5,7 @@
 ### Prerequisites
 
 1. Install uv [guide](https://docs.astral.sh/uv/getting-started/installation/)
-2. Instll go-task [guide](https://taskfile.dev/installation/)
+2. Install go-task [guide](https://taskfile.dev/installation/)
 
 ### Setup
 

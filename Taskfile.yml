@@ -1,5 +1,10 @@
 version: "3"
 tasks:
+  dup-db:
+    desc: "Duplicates a PostgreSQL database"
+    cmds:
+      - python -m scripts.copy_tables
+
   run-unit-tests:
     desc: "Runs unit tests with pytest"
     cmds:

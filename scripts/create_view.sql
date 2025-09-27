@@ -5,7 +5,7 @@ CREATE OR REPLACE VIEW connection_details AS (
         elem ->> 'subscription_id' AS subscription_id,
         elem ->> 'management_group_id' AS management_group_id,
         elem ->> 'account_id' AS account_id,
-        elem ->> 'status' AS status,
+        elem ->> 'status' AS connection_status,
         -- Generate standardized scope_id based on connection scope type
         CASE
             WHEN elem ->> 'scope' = 'SUBS' THEN LOWER(elem ->> 'subscription_id')
@@ -63,4 +63,89 @@ CREATE OR REPLACE VIEW framework_policy_details AS (
         ) AS kv (date, count)
     WHERE
         is_loaded = true
+);
+
+CREATE OR REPLACE VIEW daily_policy_compliance AS (
+    SELECT
+        policy_set_definition_id,
+        framework_id,
+        DATE (report_date) AS created_at,
+        policy_definition_id,
+        CASE
+            WHEN COUNT(
+                CASE
+                    WHEN compliance_state = 'NonCompliant' THEN 1
+                END
+            ) > 0 THEN 'NonCompliant'
+            ELSE 'Compliant'
+        END AS control_assignment_compliance_status
+    FROM public.mv_policy_compliance
+    WHERE
+        report_date >= CURRENT_DATE - INTERVAL '7 days'
+    GROUP BY
+        policy_set_definition_id,
+        framework_id,
+        DATE (report_date),
+        policy_definition_id
+);
+
+CREATE OR REPLACE VIEW daily_compliance_counts AS (
+    SELECT
+        policy_set_definition_id,
+        framework_id,
+        created_at,
+        COUNT(
+            control_assignment_compliance_status
+        ) FILTER (
+            WHERE
+                control_assignment_compliance_status = 'NonCompliant'
+        ) AS daily_total_non_compliant_count
+    FROM daily_policy_compliance
+    GROUP BY
+        policy_set_definition_id,
+        framework_id,
+        created_at
+);
+
+CREATE OR REPLACE VIEW policy_changes_for_this_week AS (
+    SELECT
+        connection_name,
+        framework_name,
+        scope_id,
+        created_at,
+        loaded_version,
+        daily_total_non_compliant_count,
+        daily_total_compliant_count,
+        daily_total_count,
+        compliance_percentage
+    FROM (
+            select *, rank() over (
+                    partition by
+                        policy_set_definition_id, created_at
+                    order by policy_count_date desc
+                ) as rnk
+            FROM (
+                    SELECT DISTINCT
+                        cd.connection_name AS connection_name, dcc.policy_set_definition_id AS policy_set_definition_id, afc.framework_name AS framework_name, afc.framework_order AS framework_order, cd.scope_id, dcc.created_at, fpc.policy_count_date, fpc.loaded_version, dcc.daily_total_non_compliant_count, fpc.policy_count - dcc.daily_total_non_compliant_count AS daily_total_compliant_count, fpc.policy_count as daily_total_count, ROUND(
+                            COALESCE(
+                                (
+                                    (
+                                        fpc.policy_count - dcc.daily_total_non_compliant_count
+                                    ) * 100.0 / NULLIF(fpc.policy_count, 0)
+                                ), 0
+                            ), 2
+                        ) AS compliance_percentage
+                    FROM
+                        daily_compliance_counts dcc
+                        JOIN framework_policy_details fpc ON fpc.policy_set_definition_id = dcc.policy_set_definition_id
+                        AND fpc.policy_count_date <= dcc.created_at
+                        JOIN active_framework_connections afc ON afc.policy_set_definition_id = dcc.policy_set_definition_id
+                        JOIN connection_details cd ON cd.scope_id = afc.scope_id
+                    ORDER BY connection_name, afc.framework_order ASC, dcc.created_at DESC
+                )
+            ORDER BY
+                connection_name, framework_order ASC, created_at DESC
+        )
+    WHERE
+        rnk = 1
 );

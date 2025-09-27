@@ -254,3 +254,27 @@ async def test_execute_no_pool(mocker: MockerFixture):
     # Should return None without error
     result = await db_service.execute("INSERT INTO test VALUES (1)")
     assert result is None
+
+
+@pytest.mark.asyncio
+async def test_show_view_definition(
+    mock_service: PostgresDBService, mocker: MockerFixture
+):
+    """Test show_view_definition method with valid view."""
+    # Mock the rows returned by the view definition query
+    mock_rows = [
+        {
+            "column_name": "amount",
+            "data_type": "numeric",
+            "full_data_type": "numeric(10,2)",
+            "is_nullable": "YES",
+            "column_default": "0.00",
+            "ordinal_position": "3",
+        },
+    ]
+
+    mock_service.query = mock.AsyncMock(return_value=mock_rows)
+    result = await mock_service.show_view_definition("public", "test_view")
+
+    mock_service.query.assert_called_once()
+    assert result == mock_rows

@@ -6,6 +6,12 @@
       "type": "debugpy",
       "request": "launch",
       "module": "scripts.copy_tables"
+    },
+    {
+      "name": "chat app",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "applications.chat_app"
     }
   ]
 }

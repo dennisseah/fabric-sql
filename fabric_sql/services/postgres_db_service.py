@@ -89,3 +89,29 @@ class PostgresDBService(IPostgresDBService):
                 await conn.execute(query)
         except Exception as e:
             print(f"Execute failed: {e}")
+
+    async def show_view_definition(
+        self, schema: str, view_name: str
+    ) -> list[dict[str, str]]:
+        query = f"""SELECT
+            column_name,
+            data_type,
+            CASE
+                WHEN character_maximum_length IS NOT NULL
+                THEN data_type || '(' || character_maximum_length || ')'
+                WHEN numeric_precision IS NOT NULL AND numeric_scale IS NOT NULL
+                THEN data_type || '(' || numeric_precision || ',' || numeric_scale || ')'
+                WHEN numeric_precision IS NOT NULL
+                THEN data_type || '(' || numeric_precision || ')'
+                ELSE data_type
+            END AS full_data_type,
+            is_nullable,
+            column_default,
+            ordinal_position
+        FROM information_schema.columns
+        WHERE table_schema = '{schema}'
+            AND table_name = '{view_name}'
+        ORDER BY ordinal_position;"""  # noqa: E501
+
+        results = await self.query(query)
+        return results if results else []
