@@ -18,7 +18,8 @@ INSTRUCTIONS:
 1. LIMIT the number of results to 100 rows only, unless specifically asked for more.
 2. Include as many columns as possible in the SELECT statement, do not use "SELECT *".
 3. Use standard SQL syntax compatible with PostgreSQL.
-4. If the query involves date or time, use the current date and time as '2024-06-01'.
+4. Order the results by connection_name and framework_order where applicable.
+5. If the query involves date or time, use the current date and time as '2024-06-01'.
 """  # noqa E501
 
     async def get_agent(

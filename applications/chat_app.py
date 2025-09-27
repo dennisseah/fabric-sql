@@ -52,9 +52,9 @@ async def main() -> None:
     llm_client = chat_client.get_model_client()
     team = await get_team(llm_client=llm_client)
 
-    async for message in team.run_stream(
-        task="What are the affected policies in the last 7 days?",
-    ):
+    input_msg = input("Enter your message: ")
+
+    async for message in team.run_stream(task=input_msg):
         if type(message) is not TaskResult:
             if message.source != "user_proxy":  # type: ignore
                 print(message.content)  # type: ignore

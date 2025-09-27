@@ -1,14 +1,13 @@
 from dataclasses import dataclass
-from pathlib import Path
 
 import yaml
 from tabulate import tabulate
 
+from fabric_sql import DB_DEFINITION_PATH
+from fabric_sql.models.table_definition import TableDefinition
+from fabric_sql.models.view_definition import ViewDefinition
 from fabric_sql.protocols.i_database_definitions import IDatabaseDefinitions
 from fabric_sql.protocols.i_target_database import ITargetDatabase
-
-# Get the directory of the current file
-current_file_folder = Path(__file__).parent
 
 
 @dataclass
@@ -17,11 +16,32 @@ class DatabaseDefinitions(IDatabaseDefinitions):
     view_definitions: dict[str, list[dict[str, str]]]
 
     def __post_init__(self) -> None:
-        defn = current_file_folder.parent / "database_definitions.yaml"
-        with open(defn, "r") as file:
+        with open(DB_DEFINITION_PATH, "r") as file:
             self.definitions = yaml.safe_load(file)
 
-    async def get_view_definitions(self) -> dict[str, list[dict[str, str]]]:
+    def get_table_definitions(self) -> list[TableDefinition]:
+        defns = []
+        for tbl in self.definitions["tables"]:
+            parts = tbl["name"].split(".")
+            defns.append(
+                TableDefinition(
+                    db_schema=parts[0],
+                    name=parts[1],
+                    is_view=tbl.get("is_view", False),
+                )
+            )
+        return defns
+
+    def get_view_definitions(self) -> list[ViewDefinition]:
+        defns = []
+        for view in self.definitions["views"]:
+            parts = view["name"].split(".")
+            defns.append(
+                ViewDefinition(db_schema=parts[0], name=parts[1], sql=view["sql"])
+            )
+        return defns
+
+    async def get_view_schemas(self) -> dict[str, list[dict[str, str]]]:
         if self.view_definitions:
             return self.view_definitions
 
@@ -41,7 +61,7 @@ class DatabaseDefinitions(IDatabaseDefinitions):
             self.definitions["views"], headers="keys", tablefmt="grid"
         )
         buff = []
-        view_defn = await self.get_view_definitions()
+        view_defn = await self.get_view_schemas()
         for view_name, cols in view_defn.items():
             buff.append(f"View: {view_name}")
             buff.append(tabulate(cols, headers="keys", tablefmt="grid"))
