@@ -8,7 +8,7 @@ from fabric_sql.services.database_definitions import DatabaseDefinitions
 
 def tet_post_init() -> None:
     svc = DatabaseDefinitions(target_db=MagicMock(), view_definitions={})
-    assert svc.definitions is not None
+    assert svc.defn is not None
 
 
 @pytest.mark.asyncio

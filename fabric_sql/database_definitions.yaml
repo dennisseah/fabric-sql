@@ -1,4 +1,5 @@
 ---
+version: "r9.0.0"
 columns:
   - name: account_id
     description: This is the unique identifier for the cloud resource scope
@@ -30,19 +31,19 @@ columns:
   - name: subscription_id
     description: This is the unique identifier for the cloud subscription
 tables:
-  - name: public.config
+  - name: config
     description: >
       configuration for the solution, the data is in JSON format
-  - name: public.framework_compliance_data
+  - name: framework_compliance_data
     description: >
       This table container framework compliance data of the cloud resources.
-  - name: public.mv_policy_compliance
+  - name: mv_policy_compliance
     description: >
       This materialized view contains framework policy data of the cloud
       resources.
     is_view: true
 views:
-  - name: public.connection_details
+  - name: connection_details
     description: >
       This table contains connection details of the cloud resources.
     sql: |
@@ -68,7 +69,7 @@ views:
       FROM public.config, jsonb_array_elements(data) AS elem
       WHERE
           elem ->> 'connect_name' IS NOT NULL
-  - name: public.active_framework_connections
+  - name: active_framework_connections
     description: >
       This view contains active framework connections of the cloud resources.
       This provides framework and scope mapping
@@ -96,7 +97,7 @@ views:
           INNER JOIN public.framework_compliance_data fcd ON cd.scope_id = fcd.scope_id
       WHERE
           fcd.is_loaded = true
-  - name: public.daily_policy_compliance
+  - name: daily_policy_compliance
     description: >
       This view contains daily policy compliance status of the cloud resources.
       This provides daily policy compliance summary (aggregated to policy level)
@@ -122,7 +123,7 @@ views:
           framework_id,
           DATE (report_date),
           policy_definition_id
-  - name: public.daily_compliance_counts
+  - name: daily_compliance_counts
     description: >
       This view contains daily compliance counts of the cloud resources. This
       provides daily compliance counts (aggregated to framework level)
@@ -142,7 +143,7 @@ views:
           policy_set_definition_id,
           framework_id,
           created_at
-  - name: public.framework_policy_details
+  - name: framework_policy_details
     description: >
       This view contains framework policy details of the cloud resources. This
       provides framework details including policy counts
@@ -160,7 +161,7 @@ views:
           ) AS kv (date, count)
       WHERE
           is_loaded = true
-  - name: public.policy_changes_for_this_week
+  - name: policy_changes_for_this_week
     description: >
       This view contains policy changes for this week for all frameworks.
     sql: |
